@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import farias.paulino.kauan.SpringRestPerson.data.vo.v1.PersonVO;
+import farias.paulino.kauan.SpringRestPerson.data.vo.v2.PersonVOV2;
 import farias.paulino.kauan.SpringRestPerson.exceptions.ResourceNotFoundException;
 import farias.paulino.kauan.SpringRestPerson.mapper.DozerMapper;
+import farias.paulino.kauan.SpringRestPerson.mapper.custom.PersonMapper;
 import farias.paulino.kauan.SpringRestPerson.model.Person;
 import farias.paulino.kauan.SpringRestPerson.repository.PersonRepository;
 
@@ -18,6 +20,9 @@ public class PersonServices {
 	
 	@Autowired
 	PersonRepository repository;
+	
+	@Autowired
+	PersonMapper mapper;
 
 	public List<PersonVO> findAll() {
 		logger.info("Finding all person");
@@ -31,12 +36,21 @@ public class PersonServices {
 		var entity = repository.findById(id).orElseThrow(()-> new ResourceNotFoundException("No records found for this id"));
 		return DozerMapper.parseObject(entity, PersonVO.class);
 	}
+	
 	public PersonVO create(PersonVO personVO) {
 		logger.info("Creating one person");
 		var entity = DozerMapper.parseObject(personVO, Person.class);
 		var vo = DozerMapper.parseObject(repository.save(entity),PersonVO.class);
 		return vo;
 	}
+	
+	public PersonVOV2 createV2(PersonVOV2 personVOV2) {
+		logger.info("Creating one person with V2");
+		var entity = mapper.convertVoToPerson(personVOV2);
+		var vo = mapper.convertPersonToVO(repository.save(entity));
+		return vo;
+	}
+	
 	public PersonVO update(PersonVO personVO) {
 		logger.info("updating one person");
 		
